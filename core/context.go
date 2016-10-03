@@ -11,9 +11,10 @@ type AppContext struct {
 type Data struct {
 	Regions  map[int]*Region
 	Branches *BranchPool
+	Cities   []*City
 }
 
-// Init main initialization function
+// Init main initialization function; not used atm
 func (c *AppContext) Init() error {
 	log.Println("*** Initializing Shop API daemon")
 
@@ -23,10 +24,12 @@ func (c *AppContext) Init() error {
 		Branches: &BranchPool{},
 	}
 
-	err := LoadEverything(c)
-	if err != nil {
-		log.Fatal(err)
-	}
+	/*
+		err := LoadEverything(c)
+		if err != nil {
+			log.Fatal(err)
+		}
+	*/
 
 	return nil
 }
