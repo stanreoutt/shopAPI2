@@ -18,6 +18,7 @@ type Branch struct {
 	OpenDate    *time.Time `json:"open_date,omitempty"`
 	ShopType    int64      `json:"shop_type"`
 	Metro       string     `json:"metro"`
+	Dist        float64    `json:"dist,omitempty"`
 }
 
 // BranchGeoMap mapping geo locations to shops for easier in-memory search
