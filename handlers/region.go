@@ -11,7 +11,7 @@ import (
 func RegionHandler(w http.ResponseWriter, r *http.Request) {
 	var output []byte
 
-	branches, err := core.GetAllRegions()
+	branches, err := core.GetAllRegions(Context)
 	if err != nil {
 		w.Write([]byte("an error has occured, please contact a service administrator"))
 		log.Println(err)

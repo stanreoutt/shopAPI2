@@ -30,10 +30,29 @@ func ShopHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var offsetLen, offsetPage int64 /* items per page; page offset */
+	offsetLen, offsetPage = 100000, 0
+
+	if olen := r.URL.Query().Get("olen"); olen != "" {
+		offsetLen, err = strconv.ParseInt(olen, 10, 64)
+		if err != nil {
+			w.Write([]byte(err.Error()))
+			log.Println(err)
+		}
+	}
+
+	if opage := r.URL.Query().Get("opage"); opage != "" {
+		offsetPage, err = strconv.ParseInt(opage, 10, 64)
+		if err != nil {
+			w.Write([]byte(err.Error()))
+			log.Println(err)
+		}
+	}
+
 	if city := r.URL.Query().Get("city"); strings.TrimSpace(city) != "" { /* by city */
-		branches, err = core.GetBranchesByCity(city)
+		branches, err = core.GetBranchesByCity(Context, city, offsetLen, offsetPage)
 	} else if region := r.URL.Query().Get("region"); strings.TrimSpace(region) != "" { /* by region */
-		branches, err = core.GetBranchesByRegion(region)
+		branches, err = core.GetBranchesByRegion(Context, region, offsetLen, offsetPage)
 	} else if exprFindByPoint {
 		var flon, flat float64
 		flon, err = strconv.ParseFloat(lon, 64)
@@ -46,11 +65,11 @@ func ShopHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(err.Error()))
 		}
 
-		branches, err = core.GetBranchesByPoint(flon, flat, 50)
+		branches, err = core.GetBranchesByPoint(Context, flon, flat, 50, offsetLen, offsetPage)
 	} else if exprFindByPolygon {
 
 	} else { /* default case, exporting all branches */
-		branches, err = core.GetAllBranches()
+		branches, err = core.GetAllBranches(Context, offsetLen, offsetPage)
 	}
 
 	if err != nil {

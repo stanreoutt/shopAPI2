@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"log"
 
 	ini "github.com/go-ini/ini"
@@ -10,9 +11,11 @@ import (
 type AppContext struct {
 	ListenAt string
 	Database struct {
-		Hostname string
-		Username string
-		Password string
+		Hostname         string
+		Username         string
+		Password         string
+		Database         string
+		ConnectionString string
 	}
 	Data Data
 }
@@ -46,6 +49,11 @@ func (c *AppContext) Init(configPath string) error {
 	c.Database.Hostname = dbSec.Key("hostname").Value()
 	c.Database.Username = dbSec.Key("username").Value()
 	c.Database.Password = dbSec.Key("password").Value()
+	c.Database.Database = dbSec.Key("database").Value()
+	c.Database.ConnectionString = fmt.Sprintf("user=%s password='%s' dbname=%s sslmode=disable",
+		c.Database.Username,
+		c.Database.Password,
+		c.Database.Database)
 
 	err = LoadEverything(c)
 	if err != nil {

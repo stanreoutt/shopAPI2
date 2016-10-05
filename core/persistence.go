@@ -12,20 +12,10 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const sqlConnectionString = "user=postgres password='r00tme' dbname=shops sslmode=disable"
-
 // LoadEverything loads everything from postgres
 func LoadEverything(c *AppContext) error {
-	// connecting to database
-	log.Println("*** Connecting to database")
-	db, err := sql.Open("postgres", sqlConnectionString)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
 	// preloading all branches
-	branches, err := GetAllBranches()
+	branches, err := GetAllBranches(c, 0, 0)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -35,14 +25,14 @@ func LoadEverything(c *AppContext) error {
 	}
 
 	// preloading cities
-	cities, err := GetAllCities()
+	cities, err := GetAllCities(c)
 	if err != nil {
 		log.Fatal(err)
 	}
 	c.Data.Cities = cities
 
 	// preloading regions
-	regions, err := GetAllRegions()
+	regions, err := GetAllRegions(c)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,9 +42,9 @@ func LoadEverything(c *AppContext) error {
 }
 
 // GetAllBranches fetching all branch records from database
-func GetAllBranches() ([]*Branch, error) {
+func GetAllBranches(c *AppContext, offsetLen, offsetPage int64) ([]*Branch, error) {
 	// connecting to database
-	db, err := sql.Open("postgres", sqlConnectionString)
+	db, err := sql.Open("postgres", c.Database.ConnectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,7 +54,9 @@ func GetAllBranches() ([]*Branch, error) {
     SELECT id, region, city, address, longitude, latitude, 
             phones, schedule, has_bar, has_vip, description, open_date, shop_type, metro, 0
     FROM branches_branch
-    `)
+	LIMIT $1
+	OFFSET $2
+    `, offsetLen, offsetLen*offsetPage)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,9 +66,9 @@ func GetAllBranches() ([]*Branch, error) {
 }
 
 // GetBranchesByCity fetching branches by city name
-func GetBranchesByCity(cityName string) ([]*Branch, error) {
+func GetBranchesByCity(c *AppContext, cityName string, offsetLen, offsetPage int64) ([]*Branch, error) {
 	// connecting to database
-	db, err := sql.Open("postgres", sqlConnectionString)
+	db, err := sql.Open("postgres", c.Database.ConnectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -87,7 +79,9 @@ func GetBranchesByCity(cityName string) ([]*Branch, error) {
             phones, schedule, has_bar, has_vip, description, open_date, shop_type, metro, 0
     FROM branches_branch
 	WHERE city=$1
-    `, cityName)
+	LIMIT $2
+	OFFSET $3
+    `, cityName, offsetLen, offsetLen*offsetPage)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -97,9 +91,9 @@ func GetBranchesByCity(cityName string) ([]*Branch, error) {
 }
 
 // GetBranchesByRegion fetching branches by region name
-func GetBranchesByRegion(regionName string) ([]*Branch, error) {
+func GetBranchesByRegion(c *AppContext, regionName string, offsetLen, offsetPage int64) ([]*Branch, error) {
 	// connecting to database
-	db, err := sql.Open("postgres", sqlConnectionString)
+	db, err := sql.Open("postgres", c.Database.ConnectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -110,7 +104,9 @@ func GetBranchesByRegion(regionName string) ([]*Branch, error) {
             phones, schedule, has_bar, has_vip, description, open_date, shop_type, metro, 0
     FROM branches_branch
 	WHERE region LIKE $1
-    `, fmt.Sprintf("%s%s", regionName, "%")) /* zomfg hackode to get a simple percent char */
+	LIMIT $2
+	OFFSET $3
+    `, fmt.Sprintf("%s%s", regionName, "%"), offsetLen, offsetLen*offsetPage) /* zomfg hackode to get a simple percent char */
 
 	if err != nil {
 		log.Fatal(err)
@@ -121,9 +117,9 @@ func GetBranchesByRegion(regionName string) ([]*Branch, error) {
 }
 
 // GetBranchesByPoint fetching branches by geospatial coordinates with a radius in miles
-func GetBranchesByPoint(lon, lat, radius float64) ([]*Branch, error) {
+func GetBranchesByPoint(c *AppContext, lon, lat, radius float64, offsetLen, offsetPage int64) ([]*Branch, error) {
 	// connecting to database
-	db, err := sql.Open("postgres", sqlConnectionString)
+	db, err := sql.Open("postgres", c.Database.ConnectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -134,7 +130,10 @@ func GetBranchesByPoint(lon, lat, radius float64) ([]*Branch, error) {
             phones, schedule, has_bar, has_vip, description, open_date, shop_type, metro, point($1, $1) <@> point(longitude, latitude)::point AS shop_distance
     FROM branches_branch
 	WHERE (point($1, $2) <@> point(longitude, latitude)) <= $3
-    `, lon, lat, radius) /* zomfg hackode to get a simple percent char */
+	ORDER BY shop_distance ASC
+	LIMIT $4
+	OFFSET $5
+    `, lon, lat, radius, offsetLen, offsetLen*offsetPage)
 
 	if err != nil {
 		log.Fatal(err)
@@ -145,9 +144,9 @@ func GetBranchesByPoint(lon, lat, radius float64) ([]*Branch, error) {
 }
 
 // GetBranchesByPolygon fetching branches by geospatial coordinates within a box
-func GetBranchesByPolygon(lon, lat, lon2, lat2 float64) ([]*Branch, error) {
+func GetBranchesByPolygon(c *AppContext, lon, lat, lon2, lat2 float64, offsetLen, offsetPage int64) ([]*Branch, error) {
 	// connecting to database
-	db, err := sql.Open("postgres", sqlConnectionString)
+	db, err := sql.Open("postgres", c.Database.ConnectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -158,7 +157,9 @@ func GetBranchesByPolygon(lon, lat, lon2, lat2 float64) ([]*Branch, error) {
             phones, schedule, has_bar, has_vip, description, open_date, shop_type, metro, 0
     FROM branches_branch
 	WHERE longitude BETWEEN $1 AND $3 AND latitude BETWEEN $2 AND $4
-    `, lon, lat, lon2, lat2) /* zomfg hackode to get a simple percent char */
+	LIMIT $5
+	OFFSET $6
+    `, lon, lat, lon2, lat2, offsetLen, offsetLen*offsetPage)
 
 	if err != nil {
 		log.Fatal(err)
@@ -216,9 +217,9 @@ func transformBranches(rows *sql.Rows) ([]*Branch, error) {
 }
 
 // GetAllCities retrieves all cities from database
-func GetAllCities() ([]*City, error) {
+func GetAllCities(c *AppContext) ([]*City, error) {
 	// connecting to database
-	db, err := sql.Open("postgres", sqlConnectionString)
+	db, err := sql.Open("postgres", c.Database.ConnectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -253,9 +254,9 @@ func GetAllCities() ([]*City, error) {
 }
 
 // GetAllRegions retrieves all regions from database
-func GetAllRegions() ([]*Region, error) {
+func GetAllRegions(c *AppContext) ([]*Region, error) {
 	// connecting to database
-	db, err := sql.Open("postgres", sqlConnectionString)
+	db, err := sql.Open("postgres", c.Database.ConnectionString)
 	if err != nil {
 		log.Fatal(err)
 	}

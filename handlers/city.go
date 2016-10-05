@@ -11,7 +11,7 @@ import (
 func CityHandler(w http.ResponseWriter, r *http.Request) {
 	var output []byte
 
-	branches, err := core.GetAllCities()
+	branches, err := core.GetAllCities(Context)
 	if err != nil {
 		w.Write([]byte("an error has occured, please contact a service administrator"))
 		log.Println(err)

@@ -30,6 +30,8 @@ func main() {
 	// configuring http server
 	r := mux.NewRouter()
 
+	handlers.Context = ac /* sharing app context with handlers package */
+
 	// defining routes
 	r.HandleFunc("/api/v1.1/{lang}/region", handlers.RegionHandler).Methods("GET")
 	r.HandleFunc("/api/v1.1/{lang}/city", handlers.CityHandler).Methods("GET")
