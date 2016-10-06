@@ -15,11 +15,14 @@ import (
 // if lat2, lon2 are applied then looking within a given rectangle area
 // city, region params are self-explanatory
 func ShopHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	var output []byte
 	var branches []*core.Branch
 	var err error
 
-	var lon, lat, lon2, lat2 = r.URL.Query().Get("lon"), r.URL.Query().Get("lat"), r.URL.Query().Get("lon2"), r.URL.Query().Get("lat2")
+	var lon, lat, lon2, lat2 = r.URL.Query().Get("lon"), r.URL.Query().Get("lat"),
+		r.URL.Query().Get("lon2"), r.URL.Query().Get("lat2")
 	var exprFindByPoint = lon != "" && lat != "" && lon2 == "" && lat2 == ""
 	var exprFindByPolygon = lon != "" && lat != "" && lon2 != "" && lat2 != ""
 	var exprInvalidGeo = (lon != "" || lat != "") && (lon2 == "" || lat2 == "")
@@ -65,9 +68,9 @@ func ShopHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(err.Error()))
 		}
 
-		branches, err = core.GetBranchesByPoint(Context, flon, flat, 50, offsetLen, offsetPage)
+		branches, err = core.GetBranchesByPoint(Context, flon, flat, Context.Misc.DefaultPointRadiusOnMap, offsetLen, offsetPage)
 	} else if exprFindByPolygon {
-
+		// todo find by polygon/box
 	} else { /* default case, exporting all branches */
 		branches, err = core.GetAllBranches(Context, offsetLen, offsetPage)
 	}

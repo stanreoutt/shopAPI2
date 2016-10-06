@@ -9,8 +9,9 @@ import (
 
 // RegionHandler exports all regions
 func RegionHandler(w http.ResponseWriter, r *http.Request) {
-	var output []byte
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
+	var output []byte
 	branches, err := core.GetAllRegions(Context)
 	if err != nil {
 		w.Write([]byte("an error has occured, please contact a service administrator"))

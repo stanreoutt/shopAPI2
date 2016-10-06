@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"log"
+	"strconv"
 
 	ini "github.com/go-ini/ini"
 )
@@ -16,6 +17,9 @@ type AppContext struct {
 		Password         string
 		Database         string
 		ConnectionString string
+	}
+	Misc struct {
+		DefaultPointRadiusOnMap float64
 	}
 	Data Data
 }
@@ -54,6 +58,12 @@ func (c *AppContext) Init(configPath string) error {
 		c.Database.Username,
 		c.Database.Password,
 		c.Database.Database)
+
+	miscSec := mainConfig.Section("misc")
+	c.Misc.DefaultPointRadiusOnMap, err = strconv.ParseFloat(miscSec.Key("default-point-radius").Value(), 64)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	err = LoadEverything(c)
 	if err != nil {

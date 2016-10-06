@@ -9,8 +9,9 @@ import (
 
 // CityHandler returns a full list of cities
 func CityHandler(w http.ResponseWriter, r *http.Request) {
-	var output []byte
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
+	var output []byte
 	branches, err := core.GetAllCities(Context)
 	if err != nil {
 		w.Write([]byte("an error has occured, please contact a service administrator"))
