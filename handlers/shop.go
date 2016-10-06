@@ -70,7 +70,28 @@ func ShopHandler(w http.ResponseWriter, r *http.Request) {
 
 		branches, err = core.GetBranchesByPoint(Context, flon, flat, Context.Misc.DefaultPointRadiusOnMap, offsetLen, offsetPage)
 	} else if exprFindByPolygon {
-		// todo find by polygon/box
+		var flon, flat, flon2, flat2 float64
+		flon, err = strconv.ParseFloat(lon, 64)
+		if err != nil {
+			w.Write([]byte(err.Error()))
+		}
+
+		flat, err = strconv.ParseFloat(lat, 64)
+		if err != nil {
+			w.Write([]byte(err.Error()))
+		}
+
+		flon, err = strconv.ParseFloat(lon2, 64)
+		if err != nil {
+			w.Write([]byte(err.Error()))
+		}
+
+		flat2, err = strconv.ParseFloat(lat2, 64)
+		if err != nil {
+			w.Write([]byte(err.Error()))
+		}
+
+		branches, err = core.GetBranchesByPolygon(Context, flon, flat, flon2, flat2, offsetLen, offsetPage)
 	} else { /* default case, exporting all branches */
 		branches, err = core.GetAllBranches(Context, offsetLen, offsetPage)
 	}
