@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>shopd</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCAie6s6N5BRKWejGZB16s44GNa1MscJ1k" type="text/javascript"></script>
+    <script type="text/javascript">
+        var mapMarkers = [];
+
+        function initMap(lon, lat) {
+            return new google.maps.Map(document.getElementById('map'), {
+                center: {
+                    lng: lon,
+                    lat: lat,
+                },
+                scrollwheel: true,
+                zoom: 12
+            });
+        }
+
+        function GetBranchesByPoint(lon, lat) {
+            var map = initMap(lon, lat);
+            $.get("http://localhost:3030/api/v1.1/ru/shop?lon=" + lon + "&lat=" + lat, function(data) {
+                try {
+                    var branches = $.parseJSON(data);
+                    for (i in branches) {
+                        var b = branches[i]; /* shorthand */
+                        mapMarkers.push(new google.maps.Marker({
+                            map: map,
+                            position: {
+                                lng: b.longitude,
+                                lat: b.latitude,
+                            },
+                            title: b.address,
+                        }));
+                    }
+                } catch (e) {}
+            });
+        }
+
+        $(document).ready(function() {
+            GetBranchesByPoint(37.566638, 55.566919);
+        });
+    </script>
+</head>
+
+<body>
+    <div id="wrapper">
+        <div id="main-container">
+            <div id="input-container">
+                <input type="text" name="city" value="" placeholder="Search by city or region">
+            </div>
+            <div id="button-container">
+                <input type="button" value="GetBranchesByPoint" onclick="GetBranchesByPoint(0, 0)">
+                <input type="button" value="GetBranchesByPolygon" onclick="GetBranchesByPoint(0, 0)">
+                <input type="button" value="Search" onclick="GetBranchesByPoint(0, 0)">
+            </div>
+            <div id="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
