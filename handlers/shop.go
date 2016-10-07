@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// ShopHandler handles the export of branches(shops) depending on what criterias it gets
+// ShopHandler handles the export of branches(shops) depending on what criteria it gets
 // ie. query GET params like city, region, lat, lon, lat2, lon2
 // if only lat and lon are given then searching for branches around a specified point with a radius given in configuration
 // if lat2, lon2 are applied then looking within a given rectangle area
@@ -81,7 +81,7 @@ func ShopHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(err.Error()))
 		}
 
-		flon, err = strconv.ParseFloat(lon2, 64)
+		flon2, err = strconv.ParseFloat(lon2, 64)
 		if err != nil {
 			w.Write([]byte(err.Error()))
 		}
