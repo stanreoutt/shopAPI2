@@ -1,3 +1,4 @@
+#!/bin/sh
 go get -u gopkg.in/alecthomas/kingpin.v2
 go get -u github.com/gorilla/mux
 go get -u github.com/go-ini/ini

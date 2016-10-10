@@ -1,0 +1,28 @@
+############################################
+####   go project - > shopAPI for FON   ####
+############################################
+
+version 1
+- basic integration with PG Database
+- return of all shops by ID
+- return of all shops by city and region
+- return of all cities
+- return of all regions
+
+version 1.1
+- rewritten in GOLANG
+- added speedup
+
+version 1.1.1
+- newrelic integration
+- add search by free text fucnction
+
+ROADMAP
+version 1.2
+- import API from Central server
+- import shops from Contact-sys
+- import shops from evroset.ru
+- extend API to take @param for shop type
+
+version 1.3
+- in memory work and speedup?
